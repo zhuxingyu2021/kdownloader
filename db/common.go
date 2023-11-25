@@ -39,6 +39,13 @@ type DBPosterMeta struct {
 	PostRef []PostRefType
 }
 
+type DBLinkQueryResult struct {
+	DBQueryID string
+
+	PostFiles     []string
+	PostDownloads []string
+}
+
 func DBTypeConvert(allMeta *kemono.PosterAll) (*DBPosterMeta, []*DBPostMeta) {
 	retPosterMeta := &DBPosterMeta{
 		ID:         allMeta.PosterAllMeta.ID,

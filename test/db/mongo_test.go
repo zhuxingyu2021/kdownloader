@@ -33,6 +33,7 @@ func TestMongoInsert(t *testing.T) {
 	dbMeta, dbPostMetas := db.DBTypeConvert(&allMeta)
 
 	cli, err := db.InitMongo(URI, DBName)
+	defer cli.Close()
 
 	if err != nil {
 		panic(err)
@@ -69,6 +70,7 @@ func TestMongoUpdate(t *testing.T) {
 	dbMeta, dbPostMetas := db.DBTypeConvert(&allMeta)
 
 	cli, err := db.InitMongo(URI, DBName)
+	defer cli.Close()
 
 	if err != nil {
 		panic(err)
@@ -78,5 +80,32 @@ func TestMongoUpdate(t *testing.T) {
 
 	if err != nil {
 		panic(err)
+	}
+}
+
+func TestMongoLinkQuery(t *testing.T) {
+	URI := `mongodb+srv://zhuxingyu:21At15KCx0kPNlJ8@cluster0.of1az56.mongodb.net/`
+	DBName := `kdb`
+
+	cli, err := db.InitMongo(URI, DBName)
+	defer cli.Close()
+
+	if err != nil {
+		panic(err)
+	}
+
+	result, err := cli.LinkQuery()
+
+	if err != nil {
+		panic(err)
+	}
+
+	for _, v := range result {
+		for _, v1 := range v.PostFiles {
+			println(v1)
+		}
+		for _, v1 := range v.PostDownloads {
+			println(v1)
+		}
 	}
 }

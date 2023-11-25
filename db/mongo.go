@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
 )
 
 const PosterMetaCollectionName string = "poster_meta"
@@ -41,6 +41,10 @@ func InitMongo(URI string, dbName string) (*MongoClientCtx, error) {
 		dbName:      dbName,
 		ctx:         ctx,
 	}, nil
+}
+
+func (c *MongoClientCtx) Close() error {
+	return c.mongoClient.Disconnect(c.ctx)
 }
 
 func (c *MongoClientCtx) insertPostMetas(postMetas []*DBPostMeta) error {
@@ -90,7 +94,7 @@ func (c *MongoClientCtx) UpdatePosterPosts(meta *DBPosterMeta, postMetas []*DBPo
 		var elem DBPosterMeta
 		err := cur.Decode(&elem)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		results = append(results, elem)
 	}
@@ -162,4 +166,44 @@ func (c *MongoClientCtx) UpdatePosterPosts(meta *DBPosterMeta, postMetas []*DBPo
 	}
 
 	return nil
+}
+
+func (c *MongoClientCtx) LinkQuery() ([]*DBLinkQueryResult, error) {
+	type linkQueryResult struct {
+		ID             primitive.ObjectID `bson:"_id"`
+		FileInDataBase bool               `bson:"fileindatabase"`
+		PostFiles      []string           `bson:"postfiles"`
+		PostDownloads  []string           `bson:"postdownloads"`
+	}
+
+	postsCollection := c.mongoClient.Database(c.dbName).Collection(PostsMetaCollectionName)
+
+	filter := bson.M{"fileindatabase": false}
+	findOptions := options.Find()
+	findOptions.SetSort(bson.M{"_id": 1}) // 1 表示升序，-1 表示降序
+	findOptions.SetLimit(200)
+
+	var results []*DBLinkQueryResult
+	cur, err := postsCollection.Find(c.ctx, filter, findOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	for cur.Next(c.ctx) {
+		var elem linkQueryResult
+		err := cur.Decode(&elem)
+		if err != nil {
+			return nil, err
+		}
+		if elem.FileInDataBase {
+			return nil, fmt.Errorf("Invalid query in LinkQuery")
+		}
+		results = append(results, &DBLinkQueryResult{
+			DBQueryID:     elem.ID.Hex(),
+			PostFiles:     elem.PostFiles,
+			PostDownloads: elem.PostDownloads,
+		})
+	}
+
+	return results, nil
 }
