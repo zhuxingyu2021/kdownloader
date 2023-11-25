@@ -6,7 +6,7 @@ import (
 )
 
 func TestGetTag(t *testing.T) {
-	tags, err := platform.GetTagFanbox(6786130)
+	tags, err := platform.GetTagFanbox("6786130")
 
 	if err != nil {
 		panic(err)
