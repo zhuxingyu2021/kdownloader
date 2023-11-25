@@ -17,7 +17,7 @@ type PosterAll struct {
 
 func GetPosterAll(platform string, userid int64) *PosterAll {
 	ret := new(PosterAll)
-	ret.PosterAllMeta, _ = SearchPoster(platform, userid)
+	ret.PosterAllMeta = SearchPoster(platform, userid)
 
 	newUUID, err := uuid.NewUUID()
 	if err != nil {
