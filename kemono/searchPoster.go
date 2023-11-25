@@ -106,7 +106,7 @@ func searchPosterPages(doc *goquery.Document, info *PostsInfo, page int) {
 	})
 }
 
-func searchPosterInternal(url string) (*PostsInfo, int64) {
+func searchPosterInternal(url string) *PostsInfo {
 	ret := new(PostsInfo)
 	ret.FetchTime = time.Now()
 
@@ -167,10 +167,14 @@ func searchPosterInternal(url string) (*PostsInfo, int64) {
 		return ret.PostRef[i].PostId < ret.PostRef[j].PostId
 	})
 
-	return ret, count
+	if count != int64(len(ret.PostRef)) {
+		panic("Search Poster Error! Count not equal")
+	}
+
+	return ret
 }
 
-func SearchPoster(platform string, userid int64) (*PostsInfo, int64) {
+func SearchPoster(platform string, userid int64) *PostsInfo {
 	url := fmt.Sprintf("https://kemono.su/%s/user/%d", platform, userid)
 
 	return searchPosterInternal(url)
