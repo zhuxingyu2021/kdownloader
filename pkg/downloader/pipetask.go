@@ -158,5 +158,10 @@ func PipeTask(config *GlobalConfig) error {
 		}
 	}
 
+	zchan <- ZWorkerArg{
+		postID: "zzzclosehaha",
+		files:  nil,
+	}
+
 	return nil
 }

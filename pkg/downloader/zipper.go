@@ -60,7 +60,7 @@ func ZWorker(ctx context.Context, zchan <-chan ZWorkerArg, config *GlobalConfig,
 				zap.String("action", "Done"))
 			return
 		case work, ok := <-zchan:
-			if !ok {
+			if (!ok) || (work.postID == "zzzclosehaha") {
 				utils2.Logger.Info("ZWorker",
 					zap.String("action", "Done"))
 				return
