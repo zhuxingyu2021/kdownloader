@@ -11,7 +11,8 @@ func TestDownloadFile(t *testing.T) {
 	url := `https://c4.kemono.su/data/30/1b/301bbf6f37da223270e7070eb6a45219e07cef8c5fb50f873b7cccff694dda9e.jpg?f=Untitled_1.jpe`
 	path := `1.jpe`
 
-	err := downloader.DownloadFile(url, path)
+	ctx := downloader.DownloadContext(context.Background())
+	err := downloader.DownloadFile(ctx, url, path)
 
 	if err != nil {
 		panic(err)
@@ -64,7 +65,8 @@ func TestDownloadWorker(t *testing.T) {
 		"https://c4.kemono.su/data/8a/1e/8a1e711afcbc8fa77b43bf72cecb3d7c700b8ff33460ed8a07d9fbf6ee41822b.jpg?f=04585.jpg",
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx_, cancel := context.WithCancel(context.Background())
+	ctx := downloader.DownloadContext(ctx_)
 
 	urlchan := make(chan (string))
 
@@ -79,14 +81,14 @@ func TestDownloadWorker(t *testing.T) {
 	}
 
 	time.Sleep(time.Second)
-	for len(downloader.GetUndownloadUrls()) > 0 {
+	for len(downloader.GetUndownloadUrls(ctx)) > 0 {
 		time.Sleep(time.Second)
 	}
 
 	cancel()
 	<-done
 
-	files := downloader.ListOKUrls()
+	files := downloader.ListOKUrls(ctx)
 
 	println("urls: ", len(urls), "downloads: ", len(files))
 

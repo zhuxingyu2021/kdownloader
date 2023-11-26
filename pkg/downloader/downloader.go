@@ -19,13 +19,12 @@ type DFileInfo struct {
 	downloadOK bool
 }
 
-var globalDFileStatus sync.Map
-
-func DownloadFile(url string, path string) error {
+func DownloadFile(ctx context.Context, url string, path string) error {
 	utils2.Logger.Info("FileDownloading",
 		zap.String("url", url),
 		zap.String("path", path))
 
+	globalDFileStatus := ctx.Value("FileStatus").(*sync.Map)
 	globalDFileStatus.Store(url, DFileInfo{
 		path:       path,
 		downloadOK: false,
@@ -79,11 +78,17 @@ func getUrlExt(rawUrl string) (string, error) {
 	return ext, nil
 }
 
+func DownloadContext(parent context.Context) context.Context {
+	return context.WithValue(parent, "FileStatus", new(sync.Map))
+}
+
 // DWorker listens for URLs on the channel and downloads them.
 // It also listens for a context cancellation to stop the worker.
 func DWorker(ctx context.Context, urls <-chan string) {
 	var fileID int64 = 0
 	var wg sync.WaitGroup
+
+	globalDFileStatus := ctx.Value("FileStatus").(*sync.Map)
 	for {
 		select {
 		case <-ctx.Done():
@@ -113,7 +118,7 @@ func DWorker(ctx context.Context, urls <-chan string) {
 				go func(url string, path string) {
 					defer wg.Done()
 					for retry := 0; retry < DownloadRetryCount; retry++ {
-						err := DownloadFile(url, path)
+						err := DownloadFile(ctx, url, path)
 						if err != nil {
 							utils2.Logger.Error("DWorker",
 								zap.String("action", "ErrorDownload"),
@@ -136,9 +141,10 @@ func DWorker(ctx context.Context, urls <-chan string) {
 	}
 }
 
-func GetUndownloadUrls() []string {
+func GetUndownloadUrls(ctx context.Context) []string {
 	var ret []string
 
+	globalDFileStatus := ctx.Value("FileStatus").(*sync.Map)
 	globalDFileStatus.Range(func(key, value interface{}) bool {
 		dFileInfo := value.(DFileInfo)
 		if !dFileInfo.downloadOK {
@@ -150,9 +156,10 @@ func GetUndownloadUrls() []string {
 	return ret
 }
 
-func ListOKUrls() map[string]string {
+func ListOKUrls(ctx context.Context) map[string]string {
 	ret := map[string]string{}
 
+	globalDFileStatus := ctx.Value("FileStatus").(*sync.Map)
 	globalDFileStatus.Range(func(key, value interface{}) bool {
 		dFileInfo := value.(DFileInfo)
 		if dFileInfo.downloadOK {
@@ -164,7 +171,8 @@ func ListOKUrls() map[string]string {
 	return ret
 }
 
-func DeleteUrls(urls []string) {
+func DeleteUrls(ctx context.Context, urls []string) {
+	globalDFileStatus := ctx.Value("FileStatus").(*sync.Map)
 	for _, u := range urls {
 		globalDFileStatus.Delete(u)
 	}

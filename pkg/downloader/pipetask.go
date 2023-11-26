@@ -46,7 +46,8 @@ func copyFilesToComplete(path string) (string, error) {
 }
 
 func PipeTask(config *GlobalConfig) error {
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx_, cancel := context.WithCancel(context.Background())
+	ctx := DownloadContext(ctx_)
 	defer cancel()
 
 	cli, err := db2.InitMongo(ctx, config.URI, config.DBName)
@@ -76,7 +77,7 @@ func PipeTask(config *GlobalConfig) error {
 
 	for {
 		time.Sleep(time.Second * 5)
-		okUrls := ListOKUrls()
+		okUrls := ListOKUrls(ctx)
 		var okPostID []int
 		var okPostUrls []string
 
@@ -121,7 +122,7 @@ func PipeTask(config *GlobalConfig) error {
 				}
 			}
 
-			DeleteUrls(okPostUrls)
+			DeleteUrls(ctx, okPostUrls)
 
 			// 移动所有下载完成的文件到完成目录
 			for _, postID := range okPostID {
@@ -153,7 +154,7 @@ func PipeTask(config *GlobalConfig) error {
 		}
 
 		// 所有Url都下载完成
-		if len(GetUndownloadUrls()) == 0 {
+		if len(GetUndownloadUrls(ctx)) == 0 {
 			break
 		}
 	}
