@@ -191,8 +191,8 @@ func (c *MongoClientCtx) LinkQuery() ([]*DBLinkQueryResult, error) {
 
 	filter := bson.M{"fileindatabase": false}
 	findOptions := options.Find()
-	findOptions.SetSort(bson.M{"_id": 1}) // 1 表示升序，-1 表示降序
-	findOptions.SetLimit(100)
+	// findOptions.SetSort(bson.M{"_id": 1}) // 1 表示升序，-1 表示降序
+	findOptions.SetLimit(120)
 
 	var results []*DBLinkQueryResult
 	cur, err := postsCollection.Find(c.ctx, filter, findOptions)

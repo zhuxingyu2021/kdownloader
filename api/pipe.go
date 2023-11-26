@@ -73,6 +73,9 @@ func startPipe(c *gin.Context) {
 				zap.Error(err))
 		}
 
+		utils.Logger.Info("PipeTask",
+			zap.String("action", "Done"))
+
 		runPipeMu.Lock()
 		runPipe = false
 		runPipeMu.Unlock()
