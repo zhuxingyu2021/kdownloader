@@ -2,14 +2,14 @@ package kemono
 
 import (
 	"encoding/json"
-	"kdownloader/kemono"
+	"kdownloader/pkg/kemono"
 	"os"
 	"testing"
 )
 
 func TestGetMetaPost(t *testing.T) {
 	// url := "https://kemono.su/patreon/user/93254587/post/90237820"
-	url := `https://kemono.su/fanbox/user/3316400/post/3472114`
+	url := `https://kemono.su/patreon/user/93254587/post/92144542`
 	postMeta := kemono.GetMetaPost(url)
 
 	// 序列化结构体为 JSON

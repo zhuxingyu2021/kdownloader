@@ -1,9 +1,9 @@
 package kemono
 
 import (
-	"fmt"
 	"github.com/google/uuid"
-	"runtime/debug"
+	"go.uber.org/zap"
+	"kdownloader/pkg/utils"
 	"sort"
 	"sync"
 )
@@ -32,14 +32,16 @@ func GetPosterAll(platform string, userid int64) *PosterAll {
 	for _, postRef := range ret.PosterAllMeta.PostRef {
 		wg.Add(1)
 		go func(url string) {
-			defer wg.Done()
 			defer func() {
 				if err := recover(); err != nil {
-					fmt.Printf("Panic caught: %v\n", err)
-					debug.PrintStack()
+					utils.Logger.Error("GetPosterAll",
+						zap.Any("error", err),
+						zap.Stack("stack"),
+					)
 					hasPanic = true
 				}
 			}()
+			defer wg.Done()
 
 			ret.posterAllDataLinkMu.Lock()
 			ret.PosterAllDataLink = append(ret.PosterAllDataLink, func(postMeta *PostMeta) *PostMeta {

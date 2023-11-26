@@ -3,9 +3,9 @@ package kemono
 import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
-	"kdownloader/utils"
+	"go.uber.org/zap"
+	utils2 "kdownloader/pkg/utils"
 	"math"
-	"runtime/debug"
 	"sort"
 	"strconv"
 	"strings"
@@ -56,21 +56,7 @@ func getPostCount(doc *goquery.Document) int64 {
 
 func getPosterS(doc *goquery.Document, poster *Poster) {
 	doc.Find("a.user-header__profile").Each(func(index int, item *goquery.Selection) {
-		// 提取href属性
-		href, exists := item.Attr("href")
-		if exists {
-			var err error
-
-			poster.Username = strings.TrimSpace(item.Text())
-
-			hrefSplit := strings.Split(href, "/")
-			poster.Platform = hrefSplit[len(hrefSplit)-3]
-			poster.Userid, err = strconv.ParseInt(hrefSplit[len(hrefSplit)-1], 10, 64)
-
-			if err != nil {
-				panic(err)
-			}
-		}
+		poster.Username = strings.TrimSpace(item.Text())
 	})
 }
 
@@ -111,13 +97,13 @@ func searchPosterInternal(url string) *PostsInfo {
 	ret.FetchTime = time.Now()
 
 	// 发送GET请求
-	response, err := utils.GetHttpCLimit(url)
+	response, err := utils2.GetHttpCLimit(url)
 	if err != nil {
 		panic(err)
 	}
-	defer response.Body.Close()
+	defer response.Close()
 
-	doc, err := goquery.NewDocumentFromReader(response.Body)
+	doc, err := goquery.NewDocumentFromReader(response.Resp.Body)
 	if err != nil {
 		panic(err)
 	}
@@ -132,22 +118,24 @@ func searchPosterInternal(url string) *PostsInfo {
 		urlInternal := fmt.Sprintf("%s?o=%d", url, i*50)
 		wg.Add(1)
 		go func(page int) {
-			defer wg.Done()
 			defer func() {
 				if err := recover(); err != nil {
-					fmt.Printf("Panic caught: %v\n", err)
-					debug.PrintStack()
+					utils2.Logger.Error("SearchPoster",
+						zap.Any("error", err),
+						zap.Stack("stack"),
+					)
 					hasPanic = true
 				}
 			}()
+			defer wg.Done()
 			// 发送GET请求
-			response, err := utils.GetHttpCLimit(urlInternal)
+			response, err := utils2.GetHttpCLimit(urlInternal)
 			if err != nil {
 				panic(err)
 			}
-			defer response.Body.Close()
+			defer response.Close()
 
-			doc, err := goquery.NewDocumentFromReader(response.Body)
+			doc, err := goquery.NewDocumentFromReader(response.Resp.Body)
 			if err != nil {
 				panic(err)
 			}
@@ -156,6 +144,15 @@ func searchPosterInternal(url string) *PostsInfo {
 		}(i)
 	}
 	getPosterS(doc, &ret.PosterInfo)
+
+	urlSplit := strings.Split(url, "/")
+	ret.PosterInfo.Platform = urlSplit[len(urlSplit)-3]
+	ret.PosterInfo.Userid, err = strconv.ParseInt(urlSplit[len(urlSplit)-1], 10, 64)
+
+	if err != nil {
+		panic(err)
+	}
+
 	searchPosterPages(doc, ret, 0)
 
 	wg.Wait()

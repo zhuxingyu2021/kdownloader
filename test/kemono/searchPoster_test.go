@@ -2,16 +2,13 @@ package kemono
 
 import (
 	"encoding/json"
-	"github.com/stretchr/testify/assert"
-	"kdownloader/kemono"
+	"kdownloader/pkg/kemono"
 	"os"
 	"testing"
 )
 
 func TestSearchPoster(t *testing.T) {
-	postsInfo, count := kemono.SearchPoster("fanbox", 3316400)
-
-	assert.Equal(t, int64(count), int64(len(postsInfo.PostRef)))
+	postsInfo := kemono.SearchPoster("fanbox", 3316400)
 
 	// 序列化结构体为 JSON
 	jsonData, err := json.MarshalIndent(postsInfo, "", "  ")

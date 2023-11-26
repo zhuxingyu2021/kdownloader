@@ -3,13 +3,13 @@ package kemono
 import (
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
-	"kdownloader/kemono"
+	"kdownloader/pkg/kemono"
 	"os"
 	"testing"
 )
 
 func TestGetPosterAll(t *testing.T) {
-	posterAll := kemono.GetPosterAll("fanbox", 16051830)
+	posterAll := kemono.GetPosterAll("patreon", 93254587)
 
 	assert.Equal(t, int64(len(posterAll.PosterAllMeta.PostRef)), int64(len(posterAll.PosterAllDataLink)))
 
@@ -20,7 +20,7 @@ func TestGetPosterAll(t *testing.T) {
 	}
 
 	// 创建输出文件
-	file, err := os.Create("Alpha91.json")
+	file, err := os.Create("brightsky.json")
 	if err != nil {
 		panic(err)
 	}

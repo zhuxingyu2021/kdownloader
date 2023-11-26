@@ -1,7 +1,7 @@
 package db
 
 import (
-	"kdownloader/kemono"
+	kemono2 "kdownloader/pkg/kemono"
 	"time"
 )
 
@@ -12,8 +12,8 @@ type DBPostMeta struct {
 
 	Url string
 
-	PosterInfo   kemono.Poster
-	PostInfoMeta kemono.PostInfo
+	PosterInfo   kemono2.Poster
+	PostInfoMeta kemono2.PostInfo
 
 	PostContent string
 
@@ -32,7 +32,7 @@ type PostRefType struct {
 type DBPosterMeta struct {
 	ID string
 
-	PosterInfo kemono.Poster
+	PosterInfo kemono2.Poster
 
 	FetchTime time.Time
 
@@ -46,7 +46,7 @@ type DBLinkQueryResult struct {
 	PostDownloads []string
 }
 
-func DBTypeConvert(allMeta *kemono.PosterAll) (*DBPosterMeta, []*DBPostMeta) {
+func DBTypeConvert(allMeta *kemono2.PosterAll) (*DBPosterMeta, []*DBPostMeta) {
 	retPosterMeta := &DBPosterMeta{
 		ID:         allMeta.PosterAllMeta.ID,
 		PosterInfo: allMeta.PosterAllMeta.PosterInfo,

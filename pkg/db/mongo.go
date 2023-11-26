@@ -7,6 +7,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.uber.org/zap"
+	"kdownloader/pkg/utils"
 )
 
 const PosterMetaCollectionName string = "poster_meta"
@@ -19,12 +21,11 @@ type MongoClientCtx struct {
 	ctx context.Context
 }
 
-func InitMongo(URI string, dbName string) (*MongoClientCtx, error) {
+func InitMongo(ctx context.Context, URI string, dbName string) (*MongoClientCtx, error) {
 	// 设置客户端选项
 	clientOptions := options.Client().ApplyURI(URI)
 
 	// 连接到 MongoDB
-	ctx := context.Background()
 	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
 		return nil, err
@@ -60,7 +61,8 @@ func (c *MongoClientCtx) insertPostMetas(postMetas []*DBPostMeta) error {
 		return err
 	}
 
-	fmt.Println("Inserted many documents: ", insertManyResult.InsertedIDs)
+	utils.Logger.Info("MongoAction", zap.String("method", "InsertMany"),
+		zap.Any("docs", insertManyResult.InsertedIDs))
 
 	return nil
 }
@@ -73,7 +75,8 @@ func (c *MongoClientCtx) InsertPosterPosts(meta *DBPosterMeta, postMetas []*DBPo
 		return err
 	}
 
-	fmt.Println("Inserted a single document: ", insertOneResult.InsertedID)
+	utils.Logger.Info("MongoAction", zap.String("method", "InsertSingle"),
+		zap.Any("docs", insertOneResult.InsertedID))
 
 	return c.insertPostMetas(postMetas)
 }
@@ -144,7 +147,11 @@ func (c *MongoClientCtx) UpdatePosterPosts(meta *DBPosterMeta, postMetas []*DBPo
 				return err
 			}
 
-			fmt.Println("Updated a single document: ", updateOneResult.UpsertedID)
+			utils.Logger.Info("MongoAction", zap.String("method", "UpdateSingle"),
+				zap.Any("docs", updateOneResult.UpsertedID),
+				zap.Int64("matched_count", updateOneResult.MatchedCount),
+				zap.Int64("modified_count", updateOneResult.ModifiedCount),
+				zap.Int64("upserted_count", updateOneResult.UpsertedCount))
 
 			filter = bson.M{
 				"postsinfoid": searchResult.ID,
@@ -159,7 +166,11 @@ func (c *MongoClientCtx) UpdatePosterPosts(meta *DBPosterMeta, postMetas []*DBPo
 				return err
 			}
 
-			fmt.Println("Updated many documents: ", updateMultiResult.UpsertedID)
+			utils.Logger.Info("MongoAction", zap.String("method", "UpdateMany"),
+				zap.Any("docs", updateMultiResult.UpsertedID),
+				zap.Int64("matched_count", updateMultiResult.MatchedCount),
+				zap.Int64("modified_count", updateMultiResult.ModifiedCount),
+				zap.Int64("upserted_count", updateMultiResult.UpsertedCount))
 
 			return c.insertPostMetas(newPostMetas)
 		}
@@ -181,7 +192,7 @@ func (c *MongoClientCtx) LinkQuery() ([]*DBLinkQueryResult, error) {
 	filter := bson.M{"fileindatabase": false}
 	findOptions := options.Find()
 	findOptions.SetSort(bson.M{"_id": 1}) // 1 表示升序，-1 表示降序
-	findOptions.SetLimit(200)
+	findOptions.SetLimit(100)
 
 	var results []*DBLinkQueryResult
 	cur, err := postsCollection.Find(c.ctx, filter, findOptions)
@@ -204,6 +215,9 @@ func (c *MongoClientCtx) LinkQuery() ([]*DBLinkQueryResult, error) {
 			PostDownloads: elem.PostDownloads,
 		})
 	}
+
+	utils.Logger.Info("MongoAction", zap.String("method", "LinkQuery"),
+		zap.Int("results_size", len(results)))
 
 	return results, nil
 }

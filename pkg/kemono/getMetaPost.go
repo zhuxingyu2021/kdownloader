@@ -2,8 +2,8 @@ package kemono
 
 import (
 	"github.com/PuerkitoBio/goquery"
-	"kdownloader/platform"
-	"kdownloader/utils"
+	"kdownloader/pkg/platform"
+	"kdownloader/pkg/utils"
 	"strconv"
 	"strings"
 	"time"
@@ -75,6 +75,16 @@ func getPostInfo(doc *goquery.Document, postinfo *PostInfo) {
 	})
 }
 
+func getPostTags(doc *goquery.Document, tags *[]string) {
+	doc.Find(".post__info").Each(func(index int, item *goquery.Selection) {
+		item.Find("#post-tags").Each(func(index int, item *goquery.Selection) {
+			item.Find("a").Each(func(index int, item *goquery.Selection) {
+				*tags = append(*tags, strings.TrimSpace(item.Text()))
+			})
+		})
+	})
+}
+
 func getPostContent(doc *goquery.Document, postContent *string) {
 	doc.Find(".post__content").Each(func(index int, item *goquery.Selection) {
 		*postContent = strings.TrimSpace(item.Text())
@@ -120,9 +130,9 @@ func GetMetaPost(url string) *PostMeta {
 	if err != nil {
 		panic(err)
 	}
-	defer response.Body.Close()
+	defer response.Close()
 
-	doc, err := goquery.NewDocumentFromReader(response.Body)
+	doc, err := goquery.NewDocumentFromReader(response.Resp.Body)
 	if err != nil {
 		panic(err)
 	}
@@ -132,8 +142,13 @@ func GetMetaPost(url string) *PostMeta {
 	getPostContent(doc, &ret.PostContent)
 	getPostFiles(doc, &ret.PostFiles)
 	getPostDownloads(doc, &ret.PostDownloads)
+	getPostTags(doc, &ret.Tags)
 
-	ret.Tags, err = platform.GetTag(ret.PosterInfo.Platform, ret.PostInfoMeta.PostId)
+	platformTag, err := platform.GetTag(ret.PosterInfo.Platform, ret.PostInfoMeta.PostId)
+	if err != nil {
+		panic(err)
+	}
+	ret.Tags = append(ret.Tags, platformTag...)
 
 	return ret
 }

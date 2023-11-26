@@ -1,7 +1,7 @@
 package platform
 
 import (
-	"kdownloader/platform"
+	"kdownloader/pkg/platform"
 	"testing"
 )
 

@@ -1,16 +1,17 @@
 package db
 
 import (
+	"context"
 	"encoding/json"
 	"io/ioutil"
-	"kdownloader/db"
-	"kdownloader/kemono"
+	db2 "kdownloader/pkg/db"
+	"kdownloader/pkg/kemono"
 	"os"
 	"testing"
 )
 
 func TestMongoInsert(t *testing.T) {
-	URI := `` //`mongodb+srv://zhuxingyu:21At15KCx0kPNlJ8@cluster0.of1az56.mongodb.net/`
+	URI := ``
 	DBName := `kdb`
 	DataSet := `horosuke.json`
 	jsonFile, err := os.Open(DataSet)
@@ -30,9 +31,9 @@ func TestMongoInsert(t *testing.T) {
 		panic(err)
 	}
 
-	dbMeta, dbPostMetas := db.DBTypeConvert(&allMeta)
+	dbMeta, dbPostMetas := db2.DBTypeConvert(&allMeta)
 
-	cli, err := db.InitMongo(URI, DBName)
+	cli, err := db2.InitMongo(context.Background(), URI, DBName)
 	defer cli.Close()
 
 	if err != nil {
@@ -47,7 +48,10 @@ func TestMongoInsert(t *testing.T) {
 }
 
 func TestMongoUpdate(t *testing.T) {
-	URI := `mongodb+srv://zhuxingyu:21At15KCx0kPNlJ8@cluster0.of1az56.mongodb.net/`
+	URI, exists := os.LookupEnv("MONGO_URI")
+	if !exists {
+		panic("MONGO_URI not found")
+	}
 	DBName := `kdb`
 	DataSet := `horosuke.json`
 	jsonFile, err := os.Open(DataSet)
@@ -67,9 +71,9 @@ func TestMongoUpdate(t *testing.T) {
 		panic(err)
 	}
 
-	dbMeta, dbPostMetas := db.DBTypeConvert(&allMeta)
+	dbMeta, dbPostMetas := db2.DBTypeConvert(&allMeta)
 
-	cli, err := db.InitMongo(URI, DBName)
+	cli, err := db2.InitMongo(context.Background(), URI, DBName)
 	defer cli.Close()
 
 	if err != nil {
@@ -84,10 +88,13 @@ func TestMongoUpdate(t *testing.T) {
 }
 
 func TestMongoLinkQuery(t *testing.T) {
-	URI := `mongodb+srv://zhuxingyu:21At15KCx0kPNlJ8@cluster0.of1az56.mongodb.net/`
+	URI, exists := os.LookupEnv("MONGO_URI")
+	if !exists {
+		panic("MONGO_URI not found")
+	}
 	DBName := `kdb`
 
-	cli, err := db.InitMongo(URI, DBName)
+	cli, err := db2.InitMongo(context.Background(), URI, DBName)
 	defer cli.Close()
 
 	if err != nil {
