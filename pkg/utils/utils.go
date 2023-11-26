@@ -60,6 +60,7 @@ func GetHttpCLimit(url string) (response *ResponseClimit, err error) {
 	// 执行 http.Get 调用
 	resp, err := http.Get(url)
 	if err != nil {
+		<-semaphore
 		return nil, err
 	}
 	return &ResponseClimit{

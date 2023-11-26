@@ -9,7 +9,7 @@ import (
 )
 
 func TestGetPosterAll(t *testing.T) {
-	posterAll := kemono.GetPosterAll("patreon", 93254587)
+	posterAll := kemono.GetPosterAll("patreon", 89164149)
 
 	assert.Equal(t, int64(len(posterAll.PosterAllMeta.PostRef)), int64(len(posterAll.PosterAllDataLink)))
 
@@ -20,7 +20,7 @@ func TestGetPosterAll(t *testing.T) {
 	}
 
 	// 创建输出文件
-	file, err := os.Create("brightsky.json")
+	file, err := os.Create("/tmp/onlookerbear.json")
 	if err != nil {
 		panic(err)
 	}

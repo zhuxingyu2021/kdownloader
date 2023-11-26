@@ -2,6 +2,7 @@ package kemono
 
 import (
 	"github.com/PuerkitoBio/goquery"
+	"go.uber.org/zap"
 	"kdownloader/pkg/platform"
 	"kdownloader/pkg/utils"
 	"strconv"
@@ -146,7 +147,10 @@ func GetMetaPost(url string) *PostMeta {
 
 	platformTag, err := platform.GetTag(ret.PosterInfo.Platform, ret.PostInfoMeta.PostId)
 	if err != nil {
-		panic(err)
+		utils.Logger.Info("PlatformError",
+			zap.String("Action", "GetTag"),
+			zap.String("Platform", ret.PosterInfo.Platform),
+			zap.String("PostId", ret.PostInfoMeta.PostId))
 	}
 	ret.Tags = append(ret.Tags, platformTag...)
 

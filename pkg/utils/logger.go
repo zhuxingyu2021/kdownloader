@@ -14,7 +14,7 @@ func initLogger() {
 		Level:            zap.NewAtomicLevelAt(zapcore.DebugLevel),
 		Development:      true,
 		Encoding:         "json",
-		OutputPaths:      []string{"/tmp/kdl/logs"},
+		OutputPaths:      []string{"/tmp/kdl/logs", "stdout"},
 		ErrorOutputPaths: []string{"stderr"},
 		EncoderConfig: zapcore.EncoderConfig{
 			TimeKey:        "time",
