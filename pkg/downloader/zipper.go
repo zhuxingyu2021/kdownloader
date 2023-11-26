@@ -39,6 +39,12 @@ func zipFiles(config *OSSConfig, files []string, postsID string) error {
 	err = utils2.ZipDirectoryToOSS(zipDirectoryPath, config.BucketName, zipFileName+".zip",
 		config.EndPoint, config.AccessKeyID, config.AccessKeySecret)
 
+	if err != nil {
+		return err
+	}
+
+	// 删除 ZIP 文件
+	err = os.RemoveAll(zipDirectoryPath)
 	return err
 }
 
