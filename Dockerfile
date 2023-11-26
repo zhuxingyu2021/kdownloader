@@ -1,5 +1,5 @@
 # 使用官方 Go 镜像作为构建环境
-FROM golang:1.18 as builder
+FROM golang:1.21 as builder
 
 # 设置工作目录
 WORKDIR /app
@@ -12,7 +12,9 @@ COPY go.sum ./
 RUN go mod download
 
 # 将源代码复制到容器中
+COPY api/ api/
 COPY cmd/ cmd/
+COPY pkg/ pkg/
 
 # 构建可执行文件
 RUN CGO_ENABLED=0 GOOS=linux go build -v -o /main cmd/main/main.go
