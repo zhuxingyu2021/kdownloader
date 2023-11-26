@@ -221,3 +221,33 @@ func (c *MongoClientCtx) LinkQuery() ([]*DBLinkQueryResult, error) {
 
 	return results, nil
 }
+
+func (c *MongoClientCtx) AllDone(hexID string) error {
+	postsCollection := c.mongoClient.Database(c.dbName).Collection(PostsMetaCollectionName)
+
+	objID, err := primitive.ObjectIDFromHex(hexID)
+	if err != nil {
+		return err
+	}
+
+	// 更新内容
+	update := bson.M{
+		"$set": bson.M{
+			"fileindatabase": true,
+		},
+	}
+
+	// 更新操作
+	result, err := postsCollection.UpdateByID(
+		context.Background(),
+		objID,
+		update,
+	)
+	if err != nil {
+		return err
+	}
+
+	utils.Logger.Info("MongoAction", zap.String("method", "UpdateByID"),
+		zap.Any("docs", result.UpsertedID))
+	return nil
+}

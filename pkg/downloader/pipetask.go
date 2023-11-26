@@ -58,7 +58,7 @@ func PipeTask(config *GlobalConfig) error {
 	urlchan := make(chan string)
 	zchan := make(chan ZWorkerArg)
 	go DWorker(ctx, urlchan)
-	go ZWorker(ctx, zchan, config)
+	go ZWorker(ctx, zchan, config, cli)
 
 	qResult, err := cli.LinkQuery()
 	if err != nil {
