@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.uber.org/zap"
 	"kdownloader/pkg/utils"
+	"os"
 )
 
 const PosterMetaCollectionName string = "poster_meta"
@@ -191,7 +192,13 @@ func (c *MongoClientCtx) LinkQuery() ([]*DBLinkQueryResult, error) {
 
 	filter := bson.M{"fileindatabase": false}
 	findOptions := options.Find()
-	// findOptions.SetSort(bson.M{"_id": 1}) // 1 表示升序，-1 表示降序
+
+	_, idDesc := os.LookupEnv("ID_DESC")
+	if !idDesc {
+		findOptions.SetSort(bson.M{"_id": 1}) // 1 表示升序，-1 表示降序
+	} else {
+		findOptions.SetSort(bson.M{"_id": -1})
+	}
 	findOptions.SetLimit(120)
 
 	var results []*DBLinkQueryResult
@@ -199,6 +206,7 @@ func (c *MongoClientCtx) LinkQuery() ([]*DBLinkQueryResult, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer cur.Close(c.ctx)
 
 	for cur.Next(c.ctx) {
 		var elem linkQueryResult
