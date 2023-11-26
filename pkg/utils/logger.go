@@ -9,12 +9,17 @@ import (
 var Logger *zap.Logger
 
 func initLogger() {
+	_, use_stdout := os.LookupEnv("USE_STDOUT")
+	var outPutPaths []string
+	if use_stdout {
+		outPutPaths = append(outPutPaths, "stdout")
+	}
 	// 配置 logger
 	config := zap.Config{
 		Level:            zap.NewAtomicLevelAt(zapcore.DebugLevel),
 		Development:      true,
 		Encoding:         "json",
-		OutputPaths:      []string{"/tmp/kdl/logs", "stdout"},
+		OutputPaths:      append(outPutPaths, "/tmp/kdl/logs"),
 		ErrorOutputPaths: []string{"stderr"},
 		EncoderConfig: zapcore.EncoderConfig{
 			TimeKey:        "time",
