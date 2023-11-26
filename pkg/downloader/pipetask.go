@@ -50,11 +50,11 @@ func PipeTask(config *GlobalConfig) error {
 	defer cancel()
 
 	cli, err := db2.InitMongo(ctx, config.URI, config.DBName)
-	defer cli.Close()
-
 	if err != nil {
 		return err
 	}
+	defer cli.Close()
+
 	urlchan := make(chan string)
 	zchan := make(chan ZWorkerArg)
 	go DWorker(ctx, urlchan)
