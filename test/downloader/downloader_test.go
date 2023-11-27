@@ -12,7 +12,7 @@ func TestDownloadFile(t *testing.T) {
 	path := `1.jpe`
 
 	ctx := downloader.DownloadContext(context.Background())
-	err := downloader.DownloadFile(ctx, url, path)
+	err := downloader.DownloadNormalFile(ctx, url, path)
 
 	if err != nil {
 		panic(err)

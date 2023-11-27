@@ -1,11 +1,13 @@
 package kemono
 
 import (
+	"errors"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"go.uber.org/zap"
 	utils2 "kdownloader/pkg/utils"
 	"math"
+	"net/http"
 	"sort"
 	"strconv"
 	"strings"
@@ -134,6 +136,11 @@ func searchPosterInternal(url string) *PostsInfo {
 				panic(err)
 			}
 			defer response.Close()
+
+			// Check server response
+			if response.Resp.StatusCode != http.StatusOK {
+				panic(errors.New("bad status: " + response.Resp.Status))
+			}
 
 			doc, err := goquery.NewDocumentFromReader(response.Resp.Body)
 			if err != nil {

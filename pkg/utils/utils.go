@@ -32,7 +32,7 @@ func GetUrlBody(url string) []byte {
 }
 
 // 定义信号量大小
-const concurrentLimit = 5
+const concurrentLimit = 4
 
 // 创建一个带缓冲的 channel 作为信号量
 var semaphore = make(chan struct{}, concurrentLimit)
@@ -63,6 +63,38 @@ func GetHttpCLimit(url string) (response *ResponseClimit, err error) {
 		<-semaphore
 		return nil, err
 	}
+	return &ResponseClimit{
+		Resp: resp,
+	}, nil
+}
+
+func GetHttpWithHeaderCLimit(url string, headers map[string]string) (response *ResponseClimit, err error) {
+	semaphore <- struct{}{} // 获取信号量的一个插槽，如果信号量满了就会阻塞
+	client := &http.Client{}
+
+	Logger.Info("httpRequest",
+		zap.String("method", "GET"),
+		zap.String("url", url))
+
+	// 创建请求
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		<-semaphore
+		return nil, err
+	}
+
+	// 添加头部
+	for key, value := range headers {
+		req.Header.Add(key, value)
+	}
+
+	// 发送请求
+	resp, err := client.Do(req)
+	if err != nil {
+		<-semaphore
+		return nil, err
+	}
+
 	return &ResponseClimit{
 		Resp: resp,
 	}, nil

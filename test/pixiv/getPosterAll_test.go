@@ -1,15 +1,15 @@
-package kemono
+package pixiv
 
 import (
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
-	"kdownloader/pkg/kemono"
+	"kdownloader/pkg/pixiv"
 	"os"
 	"testing"
 )
 
 func TestGetPosterAll(t *testing.T) {
-	posterAll := kemono.GetPosterAll("fanbox", 3316400)
+	posterAll := pixiv.GetPosterAll(323884)
 
 	assert.Equal(t, int64(len(posterAll.PosterAllMeta.PostRef)), int64(len(posterAll.PosterAllDataLink)))
 
@@ -20,7 +20,7 @@ func TestGetPosterAll(t *testing.T) {
 	}
 
 	// 创建输出文件
-	file, err := os.Create("/tmp/3316400.json")
+	file, err := os.Create("/tmp/p323884.json")
 	if err != nil {
 		panic(err)
 	}

@@ -1,10 +1,12 @@
 package kemono
 
 import (
+	"errors"
 	"github.com/PuerkitoBio/goquery"
 	"go.uber.org/zap"
 	"kdownloader/pkg/platform"
 	"kdownloader/pkg/utils"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -132,6 +134,11 @@ func GetMetaPost(url string) *PostMeta {
 		panic(err)
 	}
 	defer response.Close()
+
+	// Check server response
+	if response.Resp.StatusCode != http.StatusOK {
+		panic(errors.New("bad status: " + response.Resp.Status))
+	}
 
 	doc, err := goquery.NewDocumentFromReader(response.Resp.Body)
 	if err != nil {

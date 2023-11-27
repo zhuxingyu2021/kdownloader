@@ -8,7 +8,7 @@ import (
 )
 
 func TestGetUrlBody(t *testing.T) {
-	url := "https://kemono.su/patreon/user/93254587/post/92144542"
+	url := "https://www.pixiv.net/artworks/113710002"
 	body := utils.GetUrlBody(url)
 
 	// 将内容写入文件
