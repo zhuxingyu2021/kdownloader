@@ -145,18 +145,18 @@ func PipeTask(config *GlobalConfig) error {
 			// 移动所有下载完成的文件到完成目录
 			for _, postID := range okPostID {
 				v := qResult[postID]
-				var files []string
+				files := map[string]bool{}
 
 				for _, url := range v.PostFiles {
-					files = append(files, okUrls[url])
+					files[okUrls[url]] = true
 				}
 
 				for _, url := range v.PostDownloads {
-					files = append(files, okUrls[url])
+					files[okUrls[url]] = true
 				}
 
 				var zArg ZWorkerArg
-				for _, file := range files {
+				for file := range files {
 					newPath, err := copyFilesToComplete(file)
 					if err != nil {
 						return err
