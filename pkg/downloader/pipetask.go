@@ -146,14 +146,22 @@ func PipeTask(config *GlobalConfig) error {
 			for _, postID := range okPostID {
 				v := qResult[postID]
 				var files []string
+				var urls []string
 
 				for _, url := range v.PostFiles {
+					urls = append(urls, url)
 					files = append(files, okUrls[url])
 				}
 
 				for _, url := range v.PostDownloads {
+					urls = append(urls, url)
 					files = append(files, okUrls[url])
 				}
+
+				utils.Logger.Info("MovingDownload",
+					zap.String("queryID", v.DBQueryID),
+					zap.Any("urls", urls),
+					zap.Any("files", files))
 
 				var zArg ZWorkerArg
 				for _, file := range files {
