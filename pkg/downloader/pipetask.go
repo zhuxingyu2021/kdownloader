@@ -2,7 +2,9 @@ package downloader
 
 import (
 	"context"
+	"go.uber.org/zap"
 	db2 "kdownloader/pkg/db"
+	"kdownloader/pkg/utils"
 	"os"
 	"path/filepath"
 	"time"
@@ -37,10 +39,26 @@ func removeIndex(s []*db2.DBLinkQueryResult, idx []int) []*db2.DBLinkQueryResult
 	return result
 }
 
+func exists(path string) bool {
+	_, err := os.Stat(path) //os.Stat获取文件信息
+	if err != nil {
+		if os.IsExist(err) {
+			return true
+		}
+		return false
+	}
+	return true
+}
+
 func copyFilesToComplete(path string) (string, error) {
 	filename := filepath.Base(path)
 
 	newPath := DownloadCompletePath + filename
+
+	utils.Logger.Info("Rename",
+		zap.String("oldpath", path),
+		zap.String("newpath", newPath),
+		zap.Bool("exists", exists(path)))
 
 	return newPath, os.Rename(path, newPath)
 }
