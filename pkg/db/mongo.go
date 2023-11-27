@@ -9,6 +9,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.uber.org/zap"
 	"kdownloader/pkg/utils"
+	"os"
+	"strconv"
 )
 
 const PosterMetaCollectionName string = "poster_meta"
@@ -189,12 +191,19 @@ func (c *MongoClientCtx) LinkQuery() ([]*DBLinkQueryResult, error) {
 
 	postsCollection := c.mongoClient.Database(c.dbName).Collection(PostsMetaCollectionName)
 
-	//filter := bson.M{"fileindatabase": false}
-	//findOptions := options.Find()
+	sampleSizeRaw, exists := os.LookupEnv("SAMPLE_SIZE")
+	sampleSize := 120
+	if exists {
+		var err error
+		sampleSize, err = strconv.Atoi(sampleSizeRaw)
+		if err != nil {
+			sampleSize = 120
+		}
+	}
 
 	pipeline := mongo.Pipeline{
 		{{"$match", bson.D{{"fileindatabase", false}}}},
-		{{"$sample", bson.D{{"size", 120}}}},
+		{{"$sample", bson.D{{"size", sampleSize}}}},
 	}
 
 	var results []*DBLinkQueryResult
