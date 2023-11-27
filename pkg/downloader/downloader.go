@@ -51,18 +51,7 @@ func DownloadFile(ctx context.Context, url string, path string) error {
 
 	// Write the body to file
 	_, err = io.Copy(out, resp.Resp.Body)
-	if err != nil {
-		return err
-	}
-
-	globalDFileStatus.Store(url, DFileInfo{
-		path:       path,
-		downloadOK: true,
-	})
-	utils2.Logger.Info("FileDownloadOK",
-		zap.String("url", url),
-		zap.String("path", path))
-	return nil
+	return err
 }
 
 func getUrlExt(rawUrl string) (string, error) {
@@ -126,6 +115,13 @@ func DWorker(ctx context.Context, urls <-chan string) {
 								zap.String("path", path),
 								zap.Error(err))
 						} else {
+							globalDFileStatus.Store(url, DFileInfo{
+								path:       path,
+								downloadOK: true,
+							})
+							utils2.Logger.Info("FileDownloadOK",
+								zap.String("url", url),
+								zap.String("path", path))
 							return
 						}
 					}
