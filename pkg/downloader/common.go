@@ -8,7 +8,7 @@ const DownloadFilePath string = "/tmp/kdl/download/"
 const DownloadCompletePath string = "/tmp/kdl/complete/"
 const DownloadZipPath string = "/tmp/kdl/zip/"
 
-const DownloadRetryCount int = 5
+const DownloadRetryCount int = 8
 
 func init() {
 	err := os.MkdirAll(DownloadFilePath, 0755)

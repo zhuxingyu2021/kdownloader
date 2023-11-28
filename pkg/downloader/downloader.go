@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 )
 
 type DFileInfo struct {
@@ -24,12 +25,6 @@ func DownloadNormalFile(ctx context.Context, url string, path string) error {
 	utils2.Logger.Info("FileDownloading",
 		zap.String("url", url),
 		zap.String("path", path))
-
-	globalDFileStatus := ctx.Value("FileStatus").(*sync.Map)
-	globalDFileStatus.Store(url, DFileInfo{
-		path:       path,
-		downloadOK: false,
-	})
 
 	// Get the data
 	resp, err := utils2.GetHttpCLimit(url)
@@ -60,12 +55,6 @@ func DownloadPixivFile(ctx context.Context, url string, path string) error {
 		zap.String("url", url),
 		zap.String("path", path),
 		zap.String("type", "pixiv"))
-
-	globalDFileStatus := ctx.Value("FileStatus").(*sync.Map)
-	globalDFileStatus.Store(url, DFileInfo{
-		path:       path,
-		downloadOK: false,
-	})
 
 	// Get the data
 	header := map[string]string{
@@ -164,6 +153,10 @@ func DWorker(ctx context.Context, urls <-chan string) {
 				fileID++
 
 				wg.Add(1)
+				globalDFileStatus.Store(url, DFileInfo{
+					path:       path,
+					downloadOK: false,
+				})
 				go func(url string, path string) {
 					defer wg.Done()
 					for retry := 0; retry < DownloadRetryCount; retry++ {
@@ -174,6 +167,7 @@ func DWorker(ctx context.Context, urls <-chan string) {
 								zap.String("url", url),
 								zap.String("path", path),
 								zap.Error(err))
+							time.Sleep(time.Second * time.Duration(1<<(retry+1)))
 						} else {
 							globalDFileStatus.Store(url, DFileInfo{
 								path:       path,
