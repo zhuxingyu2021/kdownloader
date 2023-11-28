@@ -8,6 +8,8 @@ import (
 
 var Logger *zap.Logger
 
+const logPath = "/tmp/logs/kdownloader.log"
+
 func initLogger() {
 	_, use_stdout := os.LookupEnv("USE_STDOUT")
 	var outPutPaths []string
@@ -19,7 +21,7 @@ func initLogger() {
 		Level:            zap.NewAtomicLevelAt(zapcore.DebugLevel),
 		Development:      true,
 		Encoding:         "json",
-		OutputPaths:      append(outPutPaths, "/tmp/kdl/logs"),
+		OutputPaths:      append(outPutPaths, logPath),
 		ErrorOutputPaths: []string{"stderr"},
 		EncoderConfig: zapcore.EncoderConfig{
 			TimeKey:        "time",
