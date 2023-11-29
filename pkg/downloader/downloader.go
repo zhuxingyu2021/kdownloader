@@ -191,14 +191,14 @@ func DWorker(ctx context.Context, urls <-chan string) {
 	}
 }
 
-func GetUndownloadUrls(ctx context.Context) []string {
-	var ret []string
+func ListNOKUrls(ctx context.Context) map[string]string {
+	ret := map[string]string{}
 
 	globalDFileStatus := ctx.Value("FileStatus").(*sync.Map)
 	globalDFileStatus.Range(func(key, value interface{}) bool {
 		dFileInfo := value.(DFileInfo)
 		if !dFileInfo.downloadOK {
-			ret = append(ret, key.(string))
+			ret[key.(string)] = dFileInfo.path
 		}
 		return true
 	})

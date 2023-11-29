@@ -63,6 +63,86 @@ func copyFilesToComplete(path string) (string, error) {
 	return newPath, os.Rename(path, newPath)
 }
 
+func checkCompleteDownloading(ctx context.Context, qResult []*db2.DBLinkQueryResult, zchan chan ZWorkerArg) error {
+	okUrls := ListOKUrls(ctx)
+	var okPostID []int
+	var okPostUrls []string
+
+	// 计算已经下载完成的postID
+	for i, v := range qResult {
+		var notOK = false
+		for _, url := range v.PostFiles {
+			_, exists := okUrls[url]
+			if !exists {
+				notOK = true
+				break
+			}
+		}
+		if notOK {
+			continue
+		}
+		for _, url := range v.PostDownloads {
+			_, exists := okUrls[url]
+			if !exists {
+				notOK = true
+				break
+			}
+		}
+		if notOK {
+			continue
+		}
+
+		okPostID = append(okPostID, i)
+	}
+
+	if len(okPostID) > 0 {
+		// 统计下载完成的url
+		for _, postID := range okPostID {
+			v := qResult[postID]
+
+			for _, url := range v.PostFiles {
+				okPostUrls = append(okPostUrls, url)
+			}
+
+			for _, url := range v.PostDownloads {
+				okPostUrls = append(okPostUrls, url)
+			}
+		}
+
+		DeleteUrls(ctx, okPostUrls)
+
+		// 移动所有下载完成的文件到完成目录
+		for _, postID := range okPostID {
+			v := qResult[postID]
+			files := map[string]bool{}
+
+			for _, url := range v.PostFiles {
+				files[okUrls[url]] = true
+			}
+
+			for _, url := range v.PostDownloads {
+				files[okUrls[url]] = true
+			}
+
+			var zArg ZWorkerArg
+			for file := range files {
+				newPath, err := copyFilesToComplete(file)
+				if err != nil {
+					return err
+				}
+
+				zArg.files = append(zArg.files, newPath)
+			}
+			zArg.postID = v.DBQueryID
+			zchan <- zArg
+		}
+
+		qResult = removeIndex(qResult, okPostID)
+	}
+
+	return nil
+}
+
 func PipeTask(config *GlobalConfig) error {
 	err := InitDownload()
 	if err != nil {
@@ -100,84 +180,19 @@ func PipeTask(config *GlobalConfig) error {
 
 	for {
 		time.Sleep(time.Second * 5)
-		okUrls := ListOKUrls(ctx)
-		var okPostID []int
-		var okPostUrls []string
 
-		// 计算已经下载完成的postID
-		for i, v := range qResult {
-			var notOK = false
-			for _, url := range v.PostFiles {
-				_, exists := okUrls[url]
-				if !exists {
-					notOK = true
-					break
-				}
-			}
-			if notOK {
-				continue
-			}
-			for _, url := range v.PostDownloads {
-				_, exists := okUrls[url]
-				if !exists {
-					notOK = true
-					break
-				}
-			}
-			if notOK {
-				continue
-			}
-
-			okPostID = append(okPostID, i)
-		}
-
-		if len(okPostID) > 0 {
-			// 统计下载完成的url
-			for _, postID := range okPostID {
-				v := qResult[postID]
-
-				for _, url := range v.PostFiles {
-					okPostUrls = append(okPostUrls, url)
-				}
-
-				for _, url := range v.PostDownloads {
-					okPostUrls = append(okPostUrls, url)
-				}
-			}
-
-			DeleteUrls(ctx, okPostUrls)
-
-			// 移动所有下载完成的文件到完成目录
-			for _, postID := range okPostID {
-				v := qResult[postID]
-				files := map[string]bool{}
-
-				for _, url := range v.PostFiles {
-					files[okUrls[url]] = true
-				}
-
-				for _, url := range v.PostDownloads {
-					files[okUrls[url]] = true
-				}
-
-				var zArg ZWorkerArg
-				for file := range files {
-					newPath, err := copyFilesToComplete(file)
-					if err != nil {
-						return err
-					}
-
-					zArg.files = append(zArg.files, newPath)
-				}
-				zArg.postID = v.DBQueryID
-				zchan <- zArg
-			}
-
-			qResult = removeIndex(qResult, okPostID)
+		err = checkCompleteDownloading(ctx, qResult, zchan)
+		if err != nil {
+			return err
 		}
 
 		// 所有Url都下载完成
-		if len(GetUndownloadUrls(ctx)) == 0 {
+		if len(ListNOKUrls(ctx)) == 0 {
+			err = checkCompleteDownloading(ctx, qResult, zchan)
+			if err != nil {
+				return err
+			}
+
 			break
 		}
 	}
