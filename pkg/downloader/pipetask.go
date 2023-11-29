@@ -63,7 +63,7 @@ func copyFilesToComplete(path string) (string, error) {
 	return newPath, os.Rename(path, newPath)
 }
 
-func checkCompleteDownloading(ctx context.Context, qResult []*db2.DBLinkQueryResult, zchan chan ZWorkerArg) error {
+func checkCompleteDownloading(ctx context.Context, qResult []*db2.DBLinkQueryResult, zchan chan ZWorkerArg) ([]*db2.DBLinkQueryResult, error) {
 	okUrls := ListOKUrls(ctx)
 	var okPostID []int
 	var okPostUrls []string
@@ -128,7 +128,7 @@ func checkCompleteDownloading(ctx context.Context, qResult []*db2.DBLinkQueryRes
 			for file := range files {
 				newPath, err := copyFilesToComplete(file)
 				if err != nil {
-					return err
+					return nil, err
 				}
 
 				zArg.files = append(zArg.files, newPath)
@@ -140,7 +140,7 @@ func checkCompleteDownloading(ctx context.Context, qResult []*db2.DBLinkQueryRes
 		qResult = removeIndex(qResult, okPostID)
 	}
 
-	return nil
+	return qResult, nil
 }
 
 func PipeTask(config *GlobalConfig) error {
@@ -181,14 +181,14 @@ func PipeTask(config *GlobalConfig) error {
 	for {
 		time.Sleep(time.Second * 5)
 
-		err = checkCompleteDownloading(ctx, qResult, zchan)
+		qResult, err = checkCompleteDownloading(ctx, qResult, zchan)
 		if err != nil {
 			return err
 		}
 
 		// 所有Url都下载完成
 		if len(ListNOKUrls(ctx)) == 0 {
-			err = checkCompleteDownloading(ctx, qResult, zchan)
+			qResult, err = checkCompleteDownloading(ctx, qResult, zchan)
 			if err != nil {
 				return err
 			}

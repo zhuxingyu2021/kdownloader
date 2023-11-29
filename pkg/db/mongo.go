@@ -261,6 +261,7 @@ func (c *MongoClientCtx) AllDone(hexID string) error {
 	}
 
 	utils.Logger.Info("MongoAction", zap.String("method", "UpdateByID"),
+		zap.String("postID", hexID),
 		zap.Any("docs", result.UpsertedID))
 	return nil
 }
