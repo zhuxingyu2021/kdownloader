@@ -43,7 +43,7 @@ func getPostCount(doc *goquery.Document) int64 {
 
 	small := div.Find("small")
 	if small.Length() == 0 {
-		panic("getPostCount error: small not found")
+		return -1
 	}
 
 	countText := strings.Split(strings.TrimSpace(small.Text()), " ")
@@ -172,7 +172,9 @@ func searchPosterInternal(url string) *PostsInfo {
 	})
 
 	if count != int64(len(ret.PostRef)) {
-		panic("Search Poster Error! Count not equal")
+		if count != -1 {
+			panic("Search Poster Error! Count not equal")
+		}
 	}
 
 	return ret

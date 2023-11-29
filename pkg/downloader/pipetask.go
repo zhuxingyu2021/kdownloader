@@ -64,6 +64,11 @@ func copyFilesToComplete(path string) (string, error) {
 }
 
 func PipeTask(config *GlobalConfig) error {
+	err := InitDownload()
+	if err != nil {
+		return err
+	}
+
 	ctx_, cancel := context.WithCancel(context.Background())
 	ctx := DownloadContext(ctx_)
 	defer cancel()

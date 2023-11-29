@@ -180,8 +180,8 @@ func DWorker(ctx context.Context, urls <-chan string) {
 						}
 					}
 					globalDFileStatus.Delete(url)
-					utils2.Logger.Fatal("DWorker",
-						zap.String("action", "FatalDownload"),
+					utils2.Logger.Error("DWorker",
+						zap.String("action", "GiveUpDownload"),
 						zap.String("url", url),
 						zap.String("path", path),
 						zap.Error(err))
