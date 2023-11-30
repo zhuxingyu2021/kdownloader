@@ -52,8 +52,8 @@ func TestMongoUpdate(t *testing.T) {
 	if !exists {
 		panic("MONGO_URI not found")
 	}
-	DBName := `kdb2`
-	DataSet := `/tmp/p323884.json`
+	DBName := `debug`
+	DataSet := `/tmp/richeonl0.json`
 	jsonFile, err := os.Open(DataSet)
 	if err != nil {
 		panic(err)

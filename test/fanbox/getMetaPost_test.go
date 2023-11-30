@@ -1,14 +1,14 @@
-package pixiv
+package fanbox
 
 import (
 	"encoding/json"
-	"kdownloader/pkg/pixiv"
+	"kdownloader/pkg/fanbox"
 	"os"
 	"testing"
 )
 
 func TestGetMetaPost(t *testing.T) {
-	postMeta := pixiv.GetMetaPost(`72706066`)
+	postMeta := fanbox.GetMetaPost("https://richeonl0.fanbox.cc/posts/5831357")
 
 	// 序列化结构体为 JSON
 	jsonData, err := json.MarshalIndent(postMeta, "", "  ")

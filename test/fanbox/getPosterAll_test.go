@@ -1,15 +1,15 @@
-package pixiv
+package fanbox
 
 import (
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
-	"kdownloader/pkg/pixiv"
+	"kdownloader/pkg/fanbox"
 	"os"
 	"testing"
 )
 
 func TestGetPosterAll(t *testing.T) {
-	posterAll := pixiv.GetPosterAll(88637542)
+	posterAll := fanbox.GetPosterAll("richeonl0")
 
 	assert.Equal(t, int64(len(posterAll.PosterAllMeta.PostRef)), int64(len(posterAll.PosterAllDataLink)))
 
@@ -20,7 +20,7 @@ func TestGetPosterAll(t *testing.T) {
 	}
 
 	// 创建输出文件
-	file, err := os.Create("/tmp/88637542.json")
+	file, err := os.Create("/tmp/richeonl0.json")
 	if err != nil {
 		panic(err)
 	}

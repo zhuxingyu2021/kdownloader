@@ -9,7 +9,7 @@ import (
 )
 
 func TestGetPosterAll(t *testing.T) {
-	posterAll := kemono.GetPosterAll("fanbox", 3316400)
+	posterAll := kemono.GetPosterAll("patreon", 94191980)
 
 	assert.Equal(t, int64(len(posterAll.PosterAllMeta.PostRef)), int64(len(posterAll.PosterAllDataLink)))
 
@@ -20,7 +20,7 @@ func TestGetPosterAll(t *testing.T) {
 	}
 
 	// 创建输出文件
-	file, err := os.Create("/tmp/3316400.json")
+	file, err := os.Create("/tmp/94191980.json")
 	if err != nil {
 		panic(err)
 	}
