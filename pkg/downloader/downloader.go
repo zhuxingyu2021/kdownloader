@@ -198,7 +198,7 @@ func DWorker(ctx context.Context, urls <-chan string) {
 					zap.String("url", url),
 					zap.Error(err))
 			} else {
-				path := fmt.Sprintf("%s%016x%s", DownloadFilePath, fileID, ext)
+				path := fmt.Sprintf("%s%016d%s", DownloadFilePath, fileID, ext)
 				fileID++
 
 				wg.Add(1)

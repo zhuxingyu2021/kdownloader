@@ -7,6 +7,7 @@ import (
 	"kdownloader/pkg/utils"
 	"os"
 	"path/filepath"
+	"sort"
 	"time"
 )
 
@@ -133,6 +134,9 @@ func checkCompleteDownloading(ctx context.Context, qResult []*db2.DBLinkQueryRes
 
 				zArg.files = append(zArg.files, newPath)
 			}
+
+			sort.Strings(zArg.files)
+
 			zArg.postID = v.DBQueryID
 			zchan <- zArg
 		}
