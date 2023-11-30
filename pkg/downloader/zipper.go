@@ -27,7 +27,7 @@ func zipFiles(config *OSSConfig, files []string, postsID string) error {
 	for i, file := range files {
 		oldPath := file
 		ext := filepath.Ext(oldPath)
-		newPath := fmt.Sprintf("%s%04x%s", zipDirectoryPath, i, ext)
+		newPath := fmt.Sprintf("%s%06d%s", zipDirectoryPath, i, ext)
 
 		err := os.Rename(oldPath, newPath)
 		if err != nil {
