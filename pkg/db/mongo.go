@@ -11,6 +11,7 @@ import (
 	"kdownloader/pkg/utils"
 	"os"
 	"strconv"
+	"time"
 )
 
 const PosterMetaCollectionName string = "poster_meta"
@@ -247,6 +248,7 @@ func (c *MongoClientCtx) AllDone(hexID string) error {
 	update := bson.M{
 		"$set": bson.M{
 			"fileindatabase": true,
+			"dbupdatetime":   time.Now(),
 		},
 	}
 
